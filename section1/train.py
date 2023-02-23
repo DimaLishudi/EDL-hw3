@@ -80,5 +80,5 @@ def train(**kwargs):
     scales = []
     num_epochs = 5
     for epoch in range(0, num_epochs):
-        scales.append(train_epoch(train_loader, model, criterion, optimizer, device=device, **kwargs))
+        scales += train_epoch(train_loader, model, criterion, optimizer, device=device, **kwargs)
     return scales
