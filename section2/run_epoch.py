@@ -52,4 +52,4 @@ def run_epoch(data_mode: DataMode, batch_size=128, **kwargs) -> None:
         num_threads=2
     )
 
-    return t.timeit(4)
+    return t.timeit(epoch_size)
