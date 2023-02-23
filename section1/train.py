@@ -21,7 +21,6 @@ class GradScaler():
         self.down_scale = down_scale
         self.up_scale_freq = up_scale_freq
         self.loss_scale_list = []
-        return self
 
 
     def step(self, optimizer, loss):
