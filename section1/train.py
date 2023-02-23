@@ -6,6 +6,7 @@ from section1.unet import Unet
 from section1.dataset import get_train_data
 from typing import List
 
+
 class GradScaler():
     def __init__(
             self,
@@ -21,6 +22,7 @@ class GradScaler():
         self.down_scale = down_scale
         self.up_scale_freq = up_scale_freq
         self.loss_scale_list = []
+        self.good_grads_counter = 0
 
 
     def step(self, optimizer, loss):
@@ -38,15 +40,15 @@ class GradScaler():
                 for p in p_group["params"]:
                     if not torch.isfinite(p.grad).all():
                         if self.scaling_type == "dynamic":
-                            good_grads_counter = 0
-                            loss_scale /= self.down_scale
+                            self.good_grads_counter = 0
+                            self.loss_scale /= self.down_scale
                         return
                     p.grad /= self.loss_scale
         if self.scaling_type == "dynamic":
-            good_grads_counter += 1
-            if good_grads_counter == self.up_scale_freq:
+            self.good_grads_counter += 1
+            if self.good_grads_counter == self.up_scale_freq:
                 self.loss_scale *= self.up_scale
-                good_grads_counter = 0
+                self.good_grads_counter = 0
         optimizer.step()
         loss /= self.loss_scale
         
