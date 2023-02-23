@@ -46,6 +46,6 @@ class miniGPT2(nn.Module):
             x: Tensor, shape [seq_len, batch_size]
         """
         pad_mask = (x == self.pad_idx)
-        att_mask = generate_square_subsequent_mask(x.shape[0])
+        att_mask = generate_square_subsequent_mask(x.shape[1])
         x = self.pe(self.emb(x))
         return self.decoder(x, att_mask, pad_mask)
