@@ -4,7 +4,7 @@ from tqdm.auto import tqdm
 
 from section1.unet import Unet
 from section1.dataset import get_train_data
-
+from typing import List
 
 # https://pytorch.org/docs/stable/amp.html#gradient-scaling
 # добавил возращение списка коэффициентов скалирования лосса для динамического скалирования
@@ -19,7 +19,7 @@ def train_epoch(
     up_scale: float=2,
     down_scale: float=2,
     up_scale_freq: int=2000,
-) -> list[float]:
+) -> List[float]:   
     model.train()
     loss_scale_list = []
 
