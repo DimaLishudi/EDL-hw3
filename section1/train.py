@@ -70,7 +70,9 @@ def train_epoch(
         pbar.set_description(f"Loss: {round(loss.item(), 4)} " f"Accuracy: {round(accuracy.item() * 100, 4)}")
     return loss_scale_list
 
-def train(**kwargs):
+def train(seed=0, **kwargs):
+    torch.manual_seed(seed)
+    torch.use_deterministic_algorithms(True)
     device = torch.device("cuda:0")
     model = Unet().to(device)
     criterion = nn.BCEWithLogitsLoss()
