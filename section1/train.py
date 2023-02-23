@@ -18,10 +18,11 @@ def train_epoch(
     loss_scale: float=2**16,
     up_scale: float=2,
     down_scale: float=2,
-    up_scale_freq: int=2000,
+    up_scale_freq: int=5,
 ) -> List[float]:   
     model.train()
     loss_scale_list = []
+    good_grads_counter = 0
 
     pbar = tqdm(enumerate(train_loader), total=len(train_loader))
 
@@ -51,6 +52,7 @@ def train_epoch(
                 loss_scale_list.append(loss_scale)
                 if bad_grads:
                     loss_scale /= down_scale
+                    good_grad_counter = 0
                 else:
                     good_grad_counter += 1
                     if good_grad_counter == up_scale_freq:
@@ -62,7 +64,6 @@ def train_epoch(
         else:
             loss.backward()
             optimizer.step()
-        print(torch.cuda.memory_reserved(0))
 
         accuracy = ((outputs > 0.5) == labels).float().mean()
 
