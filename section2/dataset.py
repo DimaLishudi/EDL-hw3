@@ -29,7 +29,7 @@ class BrainDataset(Dataset):
         data=torch.zeros((len(raw_texts), max_length), dtype=int)
         for i, line in enumerate(raw_texts):
             idxs = vocab(line)[:MAX_LENGTH]
-            self.data[i,:len(idxs)] = idxs
+            data[i,:len(idxs)] = idxs
 
         self.tokenizer = tokenizer
         self.vocab=vocab
