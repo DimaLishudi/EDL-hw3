@@ -148,5 +148,5 @@ def collate_fn(
     :return: tuple of padded sequences and corresponding training targets
     """
 
-    text_list = torch.nn.utils.rnn.pad_sequence(batch, padding_value=0)
+    text_list = torch.nn.utils.rnn.pad_sequence(batch, padding_value=0, batch_first=True)
     return text_list

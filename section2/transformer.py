@@ -36,13 +36,14 @@ class miniGPT2(nn.Module):
         super().__init__()
         self.pe = PositionalEncoding(d_model=d_model, max_len=max_len)
         self.emb = nn.Embedding(vocab_size, d_model, pad_idx)
-        self.decoder = nn.TransformerEncoderLayer(d_model, nhead, d_model)
+        # В нашем случае декодер и энкодер - одно и то же (но добавляем маску)
+        self.decoder = nn.TransformerEncoderLayer(d_model, nhead, d_model, batch_first=True)
         self.pad_idx = pad_idx
 
     def forward(self, x: Tensor) -> Tensor:
         """
         Args:
-            x: Tensor, shape [seq_len, batch_size, embedding_dim]
+            x: Tensor, shape [seq_len, batch_size]
         """
         pad_mask = (x == self.pad_idx)
         att_mask = generate_square_subsequent_mask(x.shape[0])
