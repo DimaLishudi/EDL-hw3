@@ -25,11 +25,10 @@ class BrainDataset(Dataset):
 
         vocab = build_vocab_from_iterator(raw_texts, specials=["<pad>", "<unk>"])
         vocab.set_default_index(vocab["<unk>"])
-        text_pipeline = lambda x: vocab(tokenizer(x))
         
         data=torch.zeros((len(raw_texts), max_length), dtype=int)
         for i, line in enumerate(raw_texts):
-            idxs = text_pipeline(line)[:MAX_LENGTH]
+            idxs = vocab(line)[:MAX_LENGTH]
             self.data[i,:len(idxs)] = idxs
 
         self.tokenizer = tokenizer
@@ -60,11 +59,10 @@ class BigBrainDataset(Dataset):
 
         vocab = build_vocab_from_iterator(raw_texts, specials=["<pad>", "<unk>"])
         vocab.set_default_index(vocab["<unk>"])
-        text_pipeline = lambda x: vocab(tokenizer(x))
-        
+
         data = []
         for line in raw_texts:
-            idxs = text_pipeline(line)[:max_length]
+            idxs = vocab(line)[:max_length]
             data.append(torch.tensor(idxs, dtype=int))
 
         self.tokenizer = tokenizer
@@ -95,11 +93,10 @@ class UltraDuperBigBrainDataset(Dataset):
 
         vocab = build_vocab_from_iterator(raw_texts, specials=["<pad>", "<unk>"])
         vocab.set_default_index(vocab["<unk>"])
-        text_pipeline = lambda x: vocab(tokenizer(x))
         
         data = []
         for line in raw_texts:
-            idxs = text_pipeline(line)[:max_length]
+            idxs = vocab(line)[:max_length]
             data.append(torch.tensor(idxs, dtype=int))
 
         data = sorted(data, lambda x: len(x))
