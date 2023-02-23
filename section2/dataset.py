@@ -9,10 +9,15 @@ MAX_LENGTH = 640
 
 
 class BrainDataset(Dataset):
-    def __init__(self, data_path: str="data/wikitext-103-raw/wiki.valid.raw", max_length: int = MAX_LENGTH):
+    def __init__(self, data_path: str="data/wikitext-103-raw/", max_length: int = MAX_LENGTH):
         tokenizer = get_tokenizer("basic_english")
         raw_texts = []
-        with open(data_path) as f:
+        with open(data_path + "wiki.valid.raw") as f:
+            for line in f:
+                line = line.strip()
+                if line != "":
+                    raw_texts.append(tokenizer(line))
+        with open(data_path + "wiki.test.raw") as f:
             for line in f:
                 line = line.strip()
                 if line != "":
@@ -42,7 +47,12 @@ class BigBrainDataset(Dataset):
     def __init__(self, data_path: str, max_length: int = MAX_LENGTH):
         tokenizer = get_tokenizer("basic_english")
         raw_texts = []
-        with open(data_path) as f:
+        with open(data_path + "wiki.valid.raw") as f:
+            for line in f:
+                line = line.strip()
+                if line != "":
+                    raw_texts.append(tokenizer(line))
+        with open(data_path + "wiki.test.raw") as f:
             for line in f:
                 line = line.strip()
                 if line != "":
@@ -54,7 +64,7 @@ class BigBrainDataset(Dataset):
         
         data = []
         for line in raw_texts:
-            idxs = text_pipeline(line)[:MAX_LENGTH]
+            idxs = text_pipeline(line)[:max_length]
             data.append(torch.tensor(idxs, dtype=int))
 
         self.tokenizer = tokenizer
@@ -72,7 +82,12 @@ class UltraDuperBigBrainDataset(Dataset):
     def __init__(self, data_path: str, max_length: int = MAX_LENGTH, n_bins: int = 1):
         tokenizer = get_tokenizer("basic_english")
         raw_texts = []
-        with open(data_path) as f:
+        with open(data_path + "wiki.valid.raw") as f:
+            for line in f:
+                line = line.strip()
+                if line != "":
+                    raw_texts.append(tokenizer(line))
+        with open(data_path + "wiki.test.raw") as f:
             for line in f:
                 line = line.strip()
                 if line != "":
@@ -84,7 +99,7 @@ class UltraDuperBigBrainDataset(Dataset):
         
         data = []
         for line in raw_texts:
-            idxs = text_pipeline(line)[:MAX_LENGTH]
+            idxs = text_pipeline(line)[:max_length]
             data.append(torch.tensor(idxs, dtype=int))
 
         data = sorted(data, lambda x: len(x))

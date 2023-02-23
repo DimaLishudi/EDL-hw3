@@ -5,6 +5,8 @@ import section2.dataset
 from torch.utils.data import DataLoader
 from section2.transformer import miniGPT2
 
+from torch.utils.benchmark import Timer
+
 
 class DataMode(Enum):
     BRAIN = 1
@@ -17,7 +19,7 @@ def get_gpt2_model() -> torch.nn.Module:
     pass
 
 
-def run_epoch(data_mode: DataMode, batch_size=64, **kwargs) -> None:
+def run_epoch(data_mode: DataMode, batch_size=128, **kwargs) -> None:
     if data_mode == DataMode.BRAIN:
         dataset = section2.dataset.BrainDataset(**kwargs)
         dataloader = DataLoader(
@@ -43,8 +45,11 @@ def run_epoch(data_mode: DataMode, batch_size=64, **kwargs) -> None:
     model.to(device)
     epoch_size = len(dataset) // batch_size
 
-    for i, batch in enumerate(dataloader):
-        batch = batch.to(device)
-        out = model(batch)
-        if i > epoch_size:
-            break
+    data_iter = iter(dataloader)
+    t = Timer(
+        stmt="model(next(data_iter))",
+        globals={"data_iter": data_iter, "model" : model},
+        num_threads=2
+    )
+
+    return t.timeit(epoch_size)
