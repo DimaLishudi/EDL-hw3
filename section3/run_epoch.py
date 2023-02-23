@@ -6,7 +6,7 @@ import torch.optim as optim
 from torch.utils.data import DataLoader
 from tqdm.notebook import tqdm
 
-import dataset
+import section3.dataset
 from utils import Settings
 from vit import ViT as SubOptimalViT
 

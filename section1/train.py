@@ -2,10 +2,8 @@ import torch
 from torch import nn
 from tqdm.auto import tqdm
 
-from unet import Unet
-
-from dataset import get_train_data
-
+from section1.unet import Unet
+from section1.dataset import get_train_data
 
 
 # https://pytorch.org/docs/stable/amp.html#gradient-scaling
@@ -13,10 +11,10 @@ from dataset import get_train_data
 def train_epoch(
     train_loader: torch.utils.data.DataLoader,
     model: torch.nn.Module,
-    criterion: torch.nn._Loss,
-    optimizer: torch.optim.optimizer.Optimizer,
+    criterion: torch.nn.modules.loss._Loss,
+    optimizer: torch.optim.Optimizer,
     device: torch.device,
-    scaling_type: string="None",
+    scaling_type: str="None",
     loss_scale: float=2**16,
     up_scale: float=2,
     down_scale: float=2,
@@ -26,6 +24,7 @@ def train_epoch(
     loss_scale_list = []
 
     pbar = tqdm(enumerate(train_loader), total=len(train_loader))
+
     for i, (images, labels) in pbar:
         images = images.to(device)
         labels = labels.to(device)
@@ -42,10 +41,11 @@ def train_epoch(
             with torch.no_grad():
                 for p_group in optimizer.param_groups:
                     for p in p_group["params"]:
-                        if not torch.isfinite(p.grad):
+                        if not torch.isfinite(p.grad).all():
                             bad_grads = True
                             break
                         p.grad /= loss_scale
+                        print(p.grad.dtype)
                     if bad_grads:
                         break
             if scaling_type == "dynamic":
@@ -59,6 +59,7 @@ def train_epoch(
                         good_grad_counter = 0
             if not bad_grads:
                 optimizer.step()
+            loss /= loss_scale
         else:
             loss.backward()
             optimizer.step()
@@ -66,16 +67,17 @@ def train_epoch(
         accuracy = ((outputs > 0.5) == labels).float().mean()
 
         pbar.set_description(f"Loss: {round(loss.item(), 4)} " f"Accuracy: {round(accuracy.item() * 100, 4)}")
-        return loss_scale_list
+    return loss_scale_list
 
-def train():
+def train(**kwargs):
     device = torch.device("cuda:0")
     model = Unet().to(device)
     criterion = nn.BCEWithLogitsLoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=1e-4)
 
     train_loader = get_train_data()
-
+    scales = []
     num_epochs = 5
     for epoch in range(0, num_epochs):
-        train_epoch(train_loader, model, criterion, optimizer, device=device)
+        scales.append(train_epoch(train_loader, model, criterion, optimizer, device=device, **kwargs))
+    return scales
