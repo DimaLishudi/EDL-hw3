@@ -45,7 +45,6 @@ def train_epoch(
                             bad_grads = True
                             break
                         p.grad /= loss_scale
-                        print(p.grad.dtype)
                     if bad_grads:
                         break
             if scaling_type == "dynamic":
@@ -63,6 +62,7 @@ def train_epoch(
         else:
             loss.backward()
             optimizer.step()
+        print(torch.cuda.memory_reserved(0))
 
         accuracy = ((outputs > 0.5) == labels).float().mean()
 
