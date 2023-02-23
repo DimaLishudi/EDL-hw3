@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, List, Tuple
 
 import torch
 from torch.utils.data import Dataset, Sampler
@@ -142,8 +142,8 @@ class UltraDuperBigBrainSampler(Sampler):
 
 # Не использовал max_length, т.к. проще сразу в трейне до него всё обрезать.
 def collate_fn(
-    batch: list[tuple[str, torch.Tensor]], max_length: Optional[int] = MAX_LENGTH
-) -> tuple[torch.Tensor, torch.Tensor]:
+    batch: List[Tuple[str, torch.Tensor]], max_length: Optional[int] = MAX_LENGTH
+    ) -> Tuple[torch.Tensor, torch.Tensor]:
     """
     Pad each sequence of the incoming sequences list
     :param batch: a list of the objects received from the dataset by __getitem__
