@@ -52,12 +52,12 @@ def train_epoch(
                 loss_scale_list.append(loss_scale)
                 if bad_grads:
                     loss_scale /= down_scale
-                    good_grad_counter = 0
+                    good_grads_counter = 0
                 else:
-                    good_grad_counter += 1
-                    if good_grad_counter == up_scale_freq:
+                    good_grads_counter += 1
+                    if good_grads_counter == up_scale_freq:
                         loss_scale *= up_scale
-                        good_grad_counter = 0
+                        good_grads_counter = 0
             if not bad_grads:
                 optimizer.step()
             loss /= loss_scale
