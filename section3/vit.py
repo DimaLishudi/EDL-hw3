@@ -18,15 +18,15 @@ def pair(t):
 class PreNorm(nn.Module):
     def __init__(self, dim, fn):
         super().__init__()
-        self.norm = nn.BatchNorm1d(dim)
+        self.norm = nn.LayerNorm(dim) # FIX: nn.BatchNorm1d(dim)
         self.fn = fn
 
     def forward(self, x, **kwargs):
         # (づ ◕‿◕ )づ
         with record_function(f"PRENORM"):
-            x = rearrange(x, "b l c -> b c l")
+            # x = rearrange(x, "b l c -> b c l")
             x = self.norm(x)
-            x = rearrange(x, "b c l -> b l c")
+            # x = rearrange(x, "b c l -> b l c")
         return self.fn(x, **kwargs)
 
 
@@ -36,7 +36,7 @@ class FeedForward(nn.Module):
         # ╭( -᷅_-᷄ 〝)╮
         self.net = nn.Sequential(
             nn.Linear(dim, hidden_dim, bias=True),
-            nn.GELU(),
+            nn.ReLU(), # FIX: GELU()
             nn.Dropout(dropout),
             nn.Linear(hidden_dim, dim, bias=True),
             nn.Dropout(dropout),
@@ -45,7 +45,7 @@ class FeedForward(nn.Module):
     def forward(self, x):
         with record_function(f"FEEDFORWARD"):
             x = self.net[0](x)
-            with record_function("GELU"): # можно было и без этого, но так удобнее искать в таблице
+            with record_function("RELU"): # можно было и без этого, но так удобнее искать в таблице
                 x = self.net[1](x)
             for i in range(2, len(self.net)):
                 x = self.net[i](x)
@@ -65,26 +65,28 @@ class Attention(nn.Module):
         self.dropout = nn.Dropout(dropout)
 
         # ˁ ुᴗ_ᴗ)ु.｡oO
-        self.queries = nn.Linear(dim, inner_dim, bias=False)
-        self.keys = nn.Linear(dim, inner_dim, bias=False)
-        self.values = nn.Linear(dim, inner_dim, bias=False)
+        self.lin = nn.Linear(dim, 3*inner_dim, bias=False) # FIX: 1 linear instead of 3
+        self.inner_dim = inner_dim
 
         self.to_out = nn.Sequential(nn.Linear(inner_dim, dim), nn.Dropout(dropout)) if project_out else nn.Identity()
 
     def forward(self, x):
         with record_function(f"ATTENTION"):
-            q = self.queries(x)
-            k = self.keys(x)
-            v = self.values(x)
-
+            q, k, v = torch.split(self.lin(x), self.inner_dim, dim=-1)
+            # FIX: Forgot head dimension (effectively had 1 head instead of 8)
+            b, l, inner = q.shape
+            q.view(b, l, self.heads, -1)
+            k.view(b, l, self.heads, -1)
+            v.view(b, l, self.heads, -1)
             # 〈╭☞• ⍛•〉╭☞
-            dots = torch.matmul(q, k.transpose(-1, -2)) * self.scale
-
+            dots = torch.matmul(q, k.transpose(-1, -3)) * self.scale
+            dots.transpose(-1, -2)
             with record_function("SOFTMAX"):
                 attn = self.attend(dots)
             attn = self.dropout(attn)
 
             out = torch.matmul(attn, v)
+            out.view()
 
         return self.to_out(out)
 
