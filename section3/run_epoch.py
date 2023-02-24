@@ -39,7 +39,9 @@ def get_train_loader() -> torch.utils.data.DataLoader:
 
 def run_epoch(model, train_loader, criterion, optimizer) -> tp.Tuple[float, float]:
     epoch_loss, epoch_accuracy = 0, 0
-    for i, (data, label) in tqdm(enumerate(train_loader), desc=f"[Train]"):
+    
+    max_steps = len(train_loader) // 5
+    for i, (data, label) in tqdm(enumerate(train_loader), desc=f"[Train]", total=max_steps):
         data = data.to(Settings.device)
         label = label.to(Settings.device)
         with profile(
@@ -59,6 +61,8 @@ def run_epoch(model, train_loader, criterion, optimizer) -> tp.Tuple[float, floa
         acc = (output.argmax(dim=1) == label).float().mean()
         epoch_accuracy += acc / len(train_loader)
         epoch_loss += loss / len(train_loader)
+        if i >= max_steps:
+            break
     # return epoch_loss, epoch_accuracy
     return forward_prof, backward_prof
 

@@ -153,17 +153,14 @@ class ViT(nn.Module):
         with record_function("PATCH"):
             x = self.to_patch_embedding(img)
             b, n, _ = x.shape
-        with record_function("CLS"):
+        with record_function("POS + CLS"):
             cls_tokens = repeat(self.cls_token, "1 1 d -> b 1 d", b=b)
             x = torch.cat((cls_tokens, x), dim=1)
-
-        with record_function("POS"):
             x += self.pos_embedding[:, : (n + 1)]
 
         x = self.dropout(x)
 
-        with record_function("TRANSFORMER"):
-            x = self.transformer(x)
+        x = self.transformer(x)
 
         x = x.mean(dim=1) if self.pool == "mean" else x[:, 0]
 
