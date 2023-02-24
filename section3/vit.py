@@ -42,11 +42,12 @@ class FeedForward(nn.Module):
         )
 
     def forward(self, x):
-        x = self.net[0](x)
-        with record_function("GELU"): # модно было и без этого, но так удобнее искать в таблице
-            x = self.net[1](x)
-        for i in range(2, len(self.net)):
-            x = self.net[i](x)
+        with record_function(f"FEEDFORWARD"):
+            x = self.net[0](x)
+            with record_function("GELU"): # можно было и без этого, но так удобнее искать в таблице
+                x = self.net[1](x)
+            for i in range(2, len(self.net)):
+                x = self.net[i](x)
         return x
 
 
@@ -70,18 +71,19 @@ class Attention(nn.Module):
         self.to_out = nn.Sequential(nn.Linear(inner_dim, dim), nn.Dropout(dropout)) if project_out else nn.Identity()
 
     def forward(self, x):
-        q = self.queries(x)
-        k = self.keys(x)
-        v = self.values(x)
+        with record_function(f"ATTENTION"):
+            q = self.queries(x)
+            k = self.keys(x)
+            v = self.values(x)
 
-        # 〈╭☞• ⍛•〉╭☞
-        dots = torch.matmul(q, k.transpose(-1, -2)) * self.scale
+            # 〈╭☞• ⍛•〉╭☞
+            dots = torch.matmul(q, k.transpose(-1, -2)) * self.scale
 
-        with record_function("SOFTMAX"):
-            attn = self.attend(dots)
-        attn = self.dropout(attn)
+            with record_function("SOFTMAX"):
+                attn = self.attend(dots)
+            attn = self.dropout(attn)
 
-        out = torch.matmul(attn, v)
+            out = torch.matmul(attn, v)
 
         return self.to_out(out)
 
@@ -102,10 +104,8 @@ class Transformer(nn.Module):
 
     def forward(self, x):
         for i, (attn, ff) in enumerate(self.layers):
-            with record_function(f"ATTN {i}"):
-                x = attn(x) + x
-            with record_function(f"FF {i}"):
-                x = ff(x) + x
+            x = attn(x) + x
+            x = ff(x) + x
         return x
 
 
