@@ -83,9 +83,9 @@ class Attention(nn.Module):
 
             with record_function("SOFTMAX"):
                 attn = self.attend(dots)
-            attn = self.dropout(attn).view(b, l, inner)
+            attn = self.dropout(attn)
 
-            out = torch.matmul(attn, v)
+            out = torch.matmul(attn, v).view(b, l, inner)
 
         return self.to_out(out)
 
