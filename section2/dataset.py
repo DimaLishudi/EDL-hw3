@@ -49,7 +49,7 @@ class BigBrainDataset(Dataset):
         return self.data[idx]
 
     def __len__(self):
-        return self.data.shape[0]
+        return len(self.data)
 
 
 class UltraDuperBigBrainDataset(Dataset):
@@ -73,7 +73,7 @@ class UltraDuperBigBrainDataset(Dataset):
         return self.data[idx]
 
     def __len__(self):
-        return self.data.shape[0]
+        return len(self.data)
 
 
 class UltraDuperBigBrainSampler(Sampler):
