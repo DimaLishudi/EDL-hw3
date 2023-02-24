@@ -5,7 +5,7 @@ import section2.dataset
 from torch.utils.data import DataLoader
 from section2.transformer import miniGPT2
 
-from torch.utils.benchmark import Timer
+from timeit import Timer
 
 
 class DataMode(Enum):
@@ -46,10 +46,13 @@ def run_epoch(data_mode: DataMode, batch_size=128, **kwargs) -> None:
     epoch_size = len(dataset) // batch_size
     print(epoch_size)
     data_iter = iter(dataloader)
+
     t = Timer(
         stmt="model(next(data_iter).to(device))",
         globals={"data_iter": data_iter, "model" : model, "device" : device},
-        num_threads=2
     )
 
-    return t.timeit(epoch_size)
+    # warmup
+    t.repeat(repeat=3, number=1)
+    # calculations
+    return t.repeat(repeat=epoch_size, number=1)
