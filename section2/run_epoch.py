@@ -43,12 +43,10 @@ def run_epoch(data_mode: DataMode, batch_size=128, **kwargs) -> None:
     device = "cuda" if torch.cuda.is_available() else "cpu"
     model = miniGPT2(len(dataset.vocab)).to(device)
     epoch_size = len(dataset) // batch_size
-    print(epoch_size)
-    data_iter = iter(dataloader)
 
     t = Timer(
-        stmt="model(next(data_iter).to(device))",
-        globals={"data_iter": iter(dataloader), "model" : model, "device" : device},
+        stmt="model(next(iter(dataloader)).to(device))",
+        globals={"dataloader": dataloader, "model" : model, "device" : device},
     )
 
     # warmup
