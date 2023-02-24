@@ -53,6 +53,6 @@ def run_epoch(data_mode: DataMode, batch_size=128, **kwargs) -> None:
     )
 
     # warmup
-    t.repeat(repeat=3, number=1)
+    t.repeat(repeat=2, number=1)
     # calculations
     return t.repeat(repeat=epoch_size, number=1)
