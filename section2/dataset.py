@@ -43,7 +43,7 @@ class BrainDataset(Dataset):
 
 
 class BigBrainDataset(Dataset):
-    def __init__(self, data_path: str, max_length: int = MAX_LENGTH):
+    def __init__(self, data_path: str="data/wikitext-103-raw/", max_length: int = MAX_LENGTH):
         tokenizer = get_tokenizer("basic_english")
         raw_texts = []
         with open(data_path + "wiki.valid.raw") as f:
@@ -77,7 +77,7 @@ class BigBrainDataset(Dataset):
 
 
 class UltraDuperBigBrainDataset(Dataset):
-    def __init__(self, data_path: str, max_length: int = MAX_LENGTH, n_bins: int = 1):
+    def __init__(self, data_path: str="data/wikitext-103-raw/", max_length: int = MAX_LENGTH, n_bins: int = 1):
         tokenizer = get_tokenizer("basic_english")
         raw_texts = []
         with open(data_path + "wiki.valid.raw") as f:
