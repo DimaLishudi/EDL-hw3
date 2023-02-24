@@ -123,7 +123,7 @@ class UltraDuperBigBrainSampler(Sampler):
     
     def __iter__(self):
         while True:
-            bin_idx = torch.randint(0, self.n_bins, 1)
+            bin_idx = torch.randint(0, self.n_bins, size=(1,)).item()
             bin_start = bin_idx * self.bin_length
             # первые remainder бинов будут больше остальных на 1
             bin_start += min(bin_idx, self.remainder)
