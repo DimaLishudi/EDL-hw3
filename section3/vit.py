@@ -73,11 +73,13 @@ class Attention(nn.Module):
     def forward(self, x):
         with record_function(f"ATTENTION"):
             q, k, v = torch.split(self.lin(x), self.inner_dim, dim=-1)
+            print(q.shape)
             # FIX: Forgot head dimension (effectively had 1 head instead of 8)
             b, l, inner = q.shape
             q = q.view(b, l, self.heads, -1)
             k = k.view(b, l, self.heads, -1)
             v = v.view(b, l, self.heads, -1)
+            print(q.shape)
             # 〈╭☞• ⍛•〉╭☞
             dots = torch.matmul(q, k.transpose(-1, -3)) * self.scale
             dots = dots.transpose(-1, -2)
