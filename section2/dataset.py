@@ -99,7 +99,7 @@ class UltraDuperBigBrainDataset(Dataset):
             idxs = vocab(line)[:max_length]
             data.append(torch.tensor(idxs, dtype=int))
 
-        data = sorted(data, lambda x: len(x))
+        data = sorted(data, key=lambda x: len(x))
 
         self.tokenizer = tokenizer
         self.vocab=vocab
