@@ -10,6 +10,8 @@ import section3.dataset
 from utils import Settings
 from vit import ViT as SubOptimalViT
 
+from torch.profiler import profile, record_function, ProfilerActivity
+
 
 def get_vit_model() -> torch.nn.Module:
     model = SubOptimalViT(
@@ -53,12 +55,22 @@ def run_epoch(model, train_loader, criterion, optimizer) -> tp.Tuple[float, floa
     return epoch_loss, epoch_accuracy
 
 
+def warmup(model, train_loader):
+    for i, (data, label) in enumerate(train_loader):
+        data = data.to(Settings.device)
+        label = label.to(Settings.device)
+        model(data)
+        if i >= 2:
+            break
+
+
 def main():
     model = get_vit_model()
     train_loader = get_train_loader()
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.Adam(model.parameters(), lr=Settings.lr)
 
+    warmup(model, train_loader)
     run_epoch(model, train_loader, criterion, optimizer)
 
 

@@ -9,6 +9,7 @@ from einops import rearrange, repeat
 from einops.layers.torch import Rearrange
 from torch import nn
 
+from torch.profiler import profile, record_function
 
 def pair(t):
     return t if isinstance(t, tuple) else (t, t)
@@ -21,6 +22,7 @@ class PreNorm(nn.Module):
         self.fn = fn
 
     def forward(self, x, **kwargs):
+        # (づ ◕‿◕ )づ
         x = rearrange(x, "b l c -> b c l")
         x = self.norm(x)
         x = rearrange(x, "b c l -> b l c")
@@ -93,9 +95,11 @@ class Transformer(nn.Module):
             )
 
     def forward(self, x):
-        for attn, ff in self.layers:
-            x = attn(x) + x
-            x = ff(x) + x
+        for i, (attn, ff) in enumerate(self.layers):
+            with record_function(f"ATTN {i}"):
+                x = attn(x) + x
+            with record_function(f"FF {i}"):
+                x = ff(x) + x
         return x
 
 
@@ -146,20 +150,24 @@ class ViT(nn.Module):
         self.mlp_head = nn.Sequential(nn.BatchNorm1d(dim), nn.Linear(dim, num_classes))
 
     def forward(self, img):
-        x = self.to_patch_embedding(img)
-        b, n, _ = x.shape
+        with record_function("PATCH"):
+            x = self.to_patch_embedding(img)
+            b, n, _ = x.shape
+        with record_function("CLS"):
+            cls_tokens = repeat(self.cls_token, "1 1 d -> b 1 d", b=b)
+            x = torch.cat((cls_tokens, x), dim=1)
 
-        cls_tokens = repeat(self.cls_token, "1 1 d -> b 1 d", b=b)
-        x = torch.cat((cls_tokens, x), dim=1)
-        x += self.pos_embedding[:, : (n + 1)]
+        with record_function("POS"):
+            x += self.pos_embedding[:, : (n + 1)]
 
         x = self.dropout(x)
 
-        x = self.transformer(x)
+        with record_function("TRANSFORMER"):
+            x = self.transformer(x)
 
         x = x.mean(dim=1) if self.pool == "mean" else x[:, 0]
 
         x = self.to_latent(x)
-
-        output = self.mlp_head(x)
+        with record_function("MLP HEAD"):
+            output = self.mlp_head(x)
         return output
