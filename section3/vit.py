@@ -9,7 +9,7 @@ from einops import rearrange, repeat
 from einops.layers.torch import Rearrange
 from torch import nn
 
-from torch.profiler import profile, record_function
+from torch.profiler import record_function
 
 def pair(t):
     return t if isinstance(t, tuple) else (t, t)
