@@ -49,7 +49,7 @@ def run_epoch(data_mode: DataMode, batch_size=128, **kwargs) -> None:
     model = miniGPT2(len(dataset.vocab)).to(device)
     epoch_size = len(dataset) // batch_size
 
-    t = Timer(bench_fn)
+    t = Timer(lambda: bench_fn(model, dataloader, device))
 
     # warmup
     t.repeat(repeat=2, number=1)
