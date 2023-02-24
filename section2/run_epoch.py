@@ -23,19 +23,19 @@ def run_epoch(data_mode: DataMode, batch_size=128, **kwargs) -> None:
     if data_mode == DataMode.BRAIN:
         dataset = section2.dataset.BrainDataset(**kwargs)
         dataloader = DataLoader(
-            dataset, batch_size, shuffle=True, pin_memory=True, num_workers=2, drop_last=True,
+            dataset, batch_size, shuffle=True, pin_memory=True, num_workers=1, drop_last=True,
         )
     elif data_mode == DataMode.BIG_BRAIN:
         dataset = section2.dataset.BigBrainDataset(**kwargs)
         dataloader = DataLoader(
-            dataset, batch_size, shuffle=True, pin_memory=True, num_workers=2, drop_last=True,
+            dataset, batch_size, shuffle=True, pin_memory=True, num_workers=1, drop_last=True,
             collate_fn=section2.dataset.collate_fn,
         )
     elif data_mode == DataMode.ULTRA_DUPER_BIG_BRAIN:
         dataset = section2.dataset.UltraDuperBigBrainDataset(**kwargs)
         sampler = section2.dataset.UltraDuperBigBrainSampler(batch_size, dataset.n_bins, len(dataset))
         dataloader = DataLoader(
-            dataset, pin_memory=True, num_workers=2,
+            dataset, pin_memory=True, num_workers=1,
             collate_fn=section2.dataset.collate_fn,
             batch_sampler=sampler,
         )
