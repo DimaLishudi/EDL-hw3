@@ -19,7 +19,7 @@ def get_gpt2_model() -> torch.nn.Module:
     pass
 
 
-def run_epoch(data_mode: DataMode, batch_size=128, **kwargs) -> None:
+def run_epoch(data_mode: DataMode, batch_size=64, **kwargs) -> None:
     if data_mode == DataMode.BRAIN:
         dataset = section2.dataset.BrainDataset(**kwargs)
         dataloader = DataLoader(
