@@ -9,17 +9,25 @@ import numpy as np
 MAX_LENGTH = 640
 
 
+def clipped_file_iter(file, max_lines):
+    for i, line in file:
+        if i >= max_lines:
+            break
+        yield line
+
+
 class BrainDataset(Dataset):
-    def __init__(self, data_path: str="data/wikitext-103-raw/", max_length: int = MAX_LENGTH):
+    def __init__(self, data_path: str="data/wikitext-103-raw/", max_length: int = MAX_LENGTH, max_lines=1e5):
         tokenizer = get_tokenizer("basic_english")
         with open(data_path + "wiki.train.raw") as f:
-            vocab = build_vocab_from_iterator((tokenizer(line) for line in f), specials=["<pad>", "<unk>"])
+            vocab = build_vocab_from_iterator(clipped_file_iter(f, max_lines), specials=["<pad>", "<unk>"])
             vocab.set_default_index(vocab["<unk>"])
 
-            for file_len, _ in enumerate(f):
-                pass
-            data = torch.zeros((file_len+1, max_length), dtype=int)
-            for i, line in enumerate(f):
+            file_len = 0
+            for file_len, _ in enumerate(clipped_file_iter(f, max_lines)):
+                file_len += 1
+            data = torch.zeros((file_len, max_length), dtype=int)
+            for i, line in enumerate(clipped_file_iter(f, max_lines)):
                 idxs = vocab(tokenizer(line))[:MAX_LENGTH]
                 data[i,:len(idxs)] = torch.tensor(idxs, dtype=int)
         self.vocab = vocab
@@ -33,14 +41,14 @@ class BrainDataset(Dataset):
 
 
 class BigBrainDataset(Dataset):
-    def __init__(self, data_path: str="data/wikitext-103-raw/", max_length: int = MAX_LENGTH):
+    def __init__(self, data_path: str="data/wikitext-103-raw/", max_length: int = MAX_LENGTH, max_lines=1e5):
         tokenizer = get_tokenizer("basic_english")
         with open(data_path + "wiki.train.raw") as f:
-            vocab = build_vocab_from_iterator((tokenizer(line) for line in f), specials=["<pad>", "<unk>"])
+            vocab = build_vocab_from_iterator(clipped_file_iter(f, max_lines), specials=["<pad>", "<unk>"])
             vocab.set_default_index(vocab["<unk>"])
 
             data = []
-            for line in f:
+            for line in clipped_file_iter(f, max_lines):
                 idxs = vocab(tokenizer(line))[:max_length]
                 data.append(torch.tensor(idxs, dtype=int))
         self.vocab = vocab
@@ -54,14 +62,14 @@ class BigBrainDataset(Dataset):
 
 
 class UltraDuperBigBrainDataset(Dataset):
-    def __init__(self, data_path: str="data/wikitext-103-raw/", max_length: int = MAX_LENGTH, n_bins: int = 1):
+    def __init__(self, data_path: str="data/wikitext-103-raw/", max_length: int = MAX_LENGTH, n_bins: int=1, max_lines=1e5):
         tokenizer = get_tokenizer("basic_english")
         with open(data_path + "wiki.train.raw") as f:
-            vocab = build_vocab_from_iterator((tokenizer(line) for line in f), specials=["<pad>", "<unk>"])
+            vocab = build_vocab_from_iterator(clipped_file_iter(f, max_lines), specials=["<pad>", "<unk>"])
             vocab.set_default_index(vocab["<unk>"])
 
             data = []
-            for line in f:
+            for line in clipped_file_iter(f, max_lines):
                 idxs = vocab(tokenizer(line))[:max_length]
                 data.append(torch.tensor(idxs, dtype=int))
    
