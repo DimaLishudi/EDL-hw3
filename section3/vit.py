@@ -144,7 +144,9 @@ class ViT(nn.Module):
         )
 
         # ヾ( • – •*)〴
-        self.pos_embedding = nn.Parameter(torch.randn(1, num_patches + 1, dim))
+
+        with record_function("POS INIT"):
+            self.pos_embedding = nn.Parameter(torch.randn(1, num_patches + 1, dim))
         self.cls_token = nn.Parameter(torch.randn(1, 1, dim))
         self.dropout = nn.Dropout(emb_dropout)
 
@@ -159,9 +161,9 @@ class ViT(nn.Module):
         with record_function("PATCH"):
             x = self.to_patch_embedding(img)
             b, n, _ = x.shape
-        with record_function("POS + CLS"):
-            cls_tokens = repeat(self.cls_token, "1 1 d -> b 1 d", b=b)
-            x = torch.cat((cls_tokens, x), dim=1)
+        cls_tokens = repeat(self.cls_token, "1 1 d -> b 1 d", b=b)
+        x = torch.cat((cls_tokens, x), dim=1)
+        with record_function("POS ADD"):
             x += self.pos_embedding[:, : (n + 1)]
 
         x = self.dropout(x)
