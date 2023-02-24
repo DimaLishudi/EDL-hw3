@@ -5,7 +5,7 @@ import section2.dataset
 from torch.utils.data import DataLoader
 from section2.transformer import miniGPT2
 
-from timeit import Timer
+from time import perf_counter
 
 
 class DataMode(Enum):
@@ -28,19 +28,19 @@ def run_epoch(data_mode: DataMode, batch_size=128, **kwargs) -> None:
     if data_mode == DataMode.BRAIN:
         dataset = section2.dataset.BrainDataset(**kwargs)
         dataloader = DataLoader(
-            dataset, batch_size, shuffle=True, pin_memory=True, num_workers=1, drop_last=True,
+            dataset, batch_size, shuffle=True, pin_memory=True, num_workers=2, drop_last=True,
         )
     elif data_mode == DataMode.BIG_BRAIN:
         dataset = section2.dataset.BigBrainDataset(**kwargs)
         dataloader = DataLoader(
-            dataset, batch_size, shuffle=True, pin_memory=True, num_workers=1, drop_last=True,
+            dataset, batch_size, shuffle=True, pin_memory=True, num_workers=2, drop_last=True,
             collate_fn=section2.dataset.collate_fn,
         )
     elif data_mode == DataMode.ULTRA_DUPER_BIG_BRAIN:
         dataset = section2.dataset.UltraDuperBigBrainDataset(**kwargs)
         sampler = section2.dataset.UltraDuperBigBrainSampler(batch_size, dataset.n_bins, len(dataset))
         dataloader = DataLoader(
-            dataset, pin_memory=True, num_workers=1,
+            dataset, pin_memory=True, num_workers=2,
             collate_fn=section2.dataset.collate_fn,
             batch_sampler=sampler,
         )
@@ -49,10 +49,23 @@ def run_epoch(data_mode: DataMode, batch_size=128, **kwargs) -> None:
     model = miniGPT2(len(dataset.vocab)).to(device)
     epoch_size = len(dataset) // batch_size
 
-    t = Timer(lambda: bench_fn(model, dataloader, device))
 
-    # warmup
-    t.repeat(repeat=2, number=1)
-    # calculations
-    res = t.repeat(repeat=3*epoch_size, number=1)
-    return res
+    # warmup on 2 batches
+    for i, batch in enumerate(dataloader):
+        out = model(batch.to(device))
+        torch.cuda.synchronize()
+        if i >= 2:
+            break
+
+    times = []
+    # time calculations
+    for i, batch in enumerate(dataloader):
+        start = perf_counter()
+        model(batch.to(device))
+        torch.cuda.synchronize()
+        end = perf_counter()
+        times.append(end-start)
+        if i >= epoch_size:
+            break
+
+    return times
