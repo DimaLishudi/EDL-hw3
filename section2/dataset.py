@@ -16,8 +16,9 @@ class BrainDataset(Dataset):
             vocab = build_vocab_from_iterator((tokenizer(line) for line in f), specials=["<pad>", "<unk>"])
             vocab.set_default_index(vocab["<unk>"])
 
-            file_len = sum(1 for _ in f)
-            data = torch.zeros((file_len, max_length), dtype=int)
+            for file_len, _ in enumerate(f):
+                pass
+            data = torch.zeros((file_len+1, max_length), dtype=int)
             for i, line in enumerate(f):
                 idxs = vocab(tokenizer(line))[:MAX_LENGTH]
                 data[i,:len(idxs)] = torch.tensor(idxs, dtype=int)
