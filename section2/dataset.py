@@ -128,7 +128,7 @@ class UltraDuperBigBrainSampler(Sampler):
             bin_start = bin_idx * self.bin_length
             # первые remainder бинов будут больше остальных на 1
             bin_start += min(bin_idx, self.remainder)
-            bin_end = bin_start + self.bin_length + 1
+            bin_end = bin_start + self.bin_length
             bin_end += (bin_idx < self.remainder)
             replacement = self.batch_size > (bin_end - bin_start)
             yield np.random.choice(np.arange(bin_start, bin_end), self.batch_size, replacement)
