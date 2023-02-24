@@ -10,7 +10,7 @@ MAX_LENGTH = 640
 
 
 def clipped_file_iter(file, max_lines):
-    for i, line in file:
+    for i, line in enumerate(file):
         if i >= max_lines:
             break
         yield line
