@@ -49,5 +49,5 @@ def run_epoch(data_mode: DataMode, batch_size=128, **kwargs) -> None:
     # warmup
     t.repeat(repeat=2, number=1)
     # calculations
-    res = t.repeat(repeat=epoch_size, number=1)
+    res = t.repeat(repeat=3*epoch_size, number=1)
     return res
