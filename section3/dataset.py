@@ -8,7 +8,7 @@ from PIL import Image
 from torch.utils.data import Dataset
 from torchvision import transforms
 
-from utils import CatsAndDogs
+from section3.utils import CatsAndDogs
 
 
 class CatsDogsDataset(Dataset):
