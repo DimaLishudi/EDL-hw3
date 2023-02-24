@@ -76,13 +76,12 @@ class Attention(nn.Module):
             print(q.shape)
             # FIX: Forgot head dimension (effectively had 1 head instead of 8)
             b, l, inner = q.shape
-            q = q.view(b, l, self.heads, -1)
-            k = k.view(b, l, self.heads, -1)
-            v = v.view(b, l, self.heads, -1)
-            print(q.shape)
+            q = q.view(b, l, self.heads, -1).transpose(-1, -2)
+            k = k.view(b, l, self.heads, -1).transpose(-1, -2)
+            v = v.view(b, l, self.heads, -1).transpose(-1, -2)
             # 〈╭☞• ⍛•〉╭☞
-            dots = torch.matmul(q, k.transpose(-1, -3)) * self.scale
-            dots = dots.transpose(-1, -2)
+            dots = torch.matmul(q, k.transpose(-1, -2)) * self.scale
+            dots = dots
             with record_function("SOFTMAX"):
                 attn = self.attend(dots)
             attn = self.dropout(attn)
