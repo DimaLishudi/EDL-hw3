@@ -6,11 +6,11 @@ import torch.optim as optim
 from torch.utils.data import DataLoader
 from tqdm.notebook import tqdm
 
-import section3.dataset
+from section3 import dataset
 from utils import Settings
 from vit import ViT as SubOptimalViT
 
-from torch.profiler import profile, record_function, ProfilerActivity
+from torch.profiler import profile, ProfilerActivity
 
 
 def get_vit_model() -> torch.nn.Module:
@@ -42,17 +42,25 @@ def run_epoch(model, train_loader, criterion, optimizer) -> tp.Tuple[float, floa
     for i, (data, label) in tqdm(enumerate(train_loader), desc=f"[Train]"):
         data = data.to(Settings.device)
         label = label.to(Settings.device)
-        output = model(data)
+        with profile(
+                    activities=[ProfilerActivity.CPU, ProfilerActivity.CUDA],
+                    profile_memory=True, record_shapes=True) as forward_prof:
+            output = model(data)
         loss = criterion(output, label)
 
         optimizer.zero_grad()
-        loss.backward()
+
+        with profile(
+                    activities=[ProfilerActivity.CPU, ProfilerActivity.CUDA],
+                    profile_memory=True, record_shapes=True) as backward_prof:
+            loss.backward()
         optimizer.step()
 
         acc = (output.argmax(dim=1) == label).float().mean()
         epoch_accuracy += acc / len(train_loader)
         epoch_loss += loss / len(train_loader)
-    return epoch_loss, epoch_accuracy
+    # return epoch_loss, epoch_accuracy
+    return forward_prof, backward_prof
 
 
 def warmup(model, train_loader):
@@ -71,7 +79,7 @@ def main():
     optimizer = optim.Adam(model.parameters(), lr=Settings.lr)
 
     warmup(model, train_loader)
-    run_epoch(model, train_loader, criterion, optimizer)
+    return run_epoch(model, train_loader, criterion, optimizer)
 
 
 if __name__ == "__main__":
