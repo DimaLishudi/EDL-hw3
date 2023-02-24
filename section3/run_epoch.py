@@ -8,7 +8,7 @@ from tqdm.notebook import tqdm
 
 from section3 import dataset
 from section3.utils import Settings
-from vit import ViT as SubOptimalViT
+from section3.vit import ViT as SubOptimalViT
 
 from torch.profiler import profile, ProfilerActivity
 
