@@ -75,18 +75,17 @@ class Attention(nn.Module):
             q, k, v = torch.split(self.lin(x), self.inner_dim, dim=-1)
             # FIX: Forgot head dimension (effectively had 1 head instead of 8)
             b, l, inner = q.shape
-            q.view(b, l, self.heads, -1)
-            k.view(b, l, self.heads, -1)
-            v.view(b, l, self.heads, -1)
+            q = q.view(b, l, self.heads, -1)
+            k = k.view(b, l, self.heads, -1)
+            v = v.view(b, l, self.heads, -1)
             # 〈╭☞• ⍛•〉╭☞
             dots = torch.matmul(q, k.transpose(-1, -3)) * self.scale
-            dots.transpose(-1, -2)
+            dots = dots.transpose(-1, -2)
             with record_function("SOFTMAX"):
                 attn = self.attend(dots)
             attn = self.dropout(attn)
 
             out = torch.matmul(attn, v)
-            out.view()
 
         return self.to_out(out)
 
