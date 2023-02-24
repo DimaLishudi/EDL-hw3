@@ -42,7 +42,12 @@ class FeedForward(nn.Module):
         )
 
     def forward(self, x):
-        return self.net(x)
+        x = self.net[0](x)
+        with record_function("GELU"): # модно было и без этого, но так удобнее искать в таблице
+            x = self.net[1](x)
+        for i in range(2, len(self.net)):
+            x = self.net[i](x)
+        return x
 
 
 class Attention(nn.Module):
@@ -72,7 +77,8 @@ class Attention(nn.Module):
         # 〈╭☞• ⍛•〉╭☞
         dots = torch.matmul(q, k.transpose(-1, -2)) * self.scale
 
-        attn = self.attend(dots)
+        with record_function("SOFTMAX"):
+            attn = self.attend(dots)
         attn = self.dropout(attn)
 
         out = torch.matmul(attn, v)

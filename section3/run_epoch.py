@@ -63,8 +63,7 @@ def run_epoch(model, train_loader, criterion, optimizer) -> tp.Tuple[float, floa
         epoch_loss += loss / len(train_loader)
         if i >= max_steps:
             break
-    # return epoch_loss, epoch_accuracy
-    return forward_prof, backward_prof
+    return epoch_loss, epoch_accuracy, forward_prof, backward_prof
 
 
 def warmup(model, train_loader):
